@@ -1,0 +1,114 @@
+<div class="movimentos-manuais-container">
+  <div class="header">
+    <h1>Movimentos Manuais</h1>
+    <div class="header-actions">
+      <button class="btn btn-primary" type="button" (click)="novo()">+ Novo</button>
+    </div>
+  </div>
+
+  <form [formGroup]="movimentoForm" (ngSubmit)="onSubmit()" class="movimento-form card">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-3">
+          <label for="mes">Mês</label>
+          <input id="mes" type="number" formControlName="mes" class="form-control" />
+          <div class="text-danger" *ngIf="movimentoForm.get('mes')?.invalid && movimentoForm.get('mes')?.touched">
+            Mês obrigatório (1-12).
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <label for="ano">Ano</label>
+          <input id="ano" type="number" formControlName="ano" class="form-control" />
+          <div class="text-danger" *ngIf="movimentoForm.get('ano')?.invalid && movimentoForm.get('ano')?.touched">
+            Ano inválido.
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <label for="codProduto">Produto</label>
+          <select id="codProduto" formControlName="codProduto" (change)="onProdutoChange($event)" class="form-control">
+            <option value="">-- Selecione --</option>
+            <option *ngFor="let p of produtos" [value]="p.codProduto">{{ p.desProduto }}</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label for="codCosif">COSIF</label>
+          <select id="codCosif" formControlName="codCosif" class="form-control">
+            <option value="">-- Selecione --</option>
+            <option *ngFor="let c of cosifs" [value]="c.codCosif">{{ c.codClassificacao }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row mt-3">
+        <div class="col-md-8">
+          <label for="descricao">Descrição</label>
+          <input id="descricao" type="text" formControlName="descricao" class="form-control" />
+          <div class="text-danger" *ngIf="movimentoForm.get('descricao')?.invalid && movimentoForm.get('descricao')?.touched">
+            Descrição é obrigatória (máx 50 caracteres).
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <label for="valor">Valor</label>
+          <input id="valor" type="number" formControlName="valor" class="form-control" />
+          <div class="text-danger" *ngIf="movimentoForm.get('valor')?.invalid && movimentoForm.get('valor')?.touched">
+            Informe um valor positivo.
+          </div>
+        </div>
+      </div>
+
+      <div class="card-actions mt-4">
+        <button class="btn btn-success" type="submit" [disabled]="movimentoForm.disabled || movimentoForm.invalid">Salvar</button>
+        <button class="btn btn-secondary" type="button" (click)="limparFormulario()" [disabled]="movimentoForm.disabled">Limpar</button>
+      </div>
+    </div>
+  </form>
+
+  <div class="card mt-4">
+    <div class="card-body">
+      <h2 class="card-title">Lista de Movimentos</h2>
+      <form [formGroup]="filtroForm" class="filtros">
+        <div class="row">
+          <div class="col-md-3">
+            <label for="filtroMes">Mês</label>
+            <input id="filtroMes" type="number" min="1" max="12" formControlName="mes" class="form-control" />
+          </div>
+          <div class="col-md-3">
+            <label for="filtroAno">Ano</label>
+            <input id="filtroAno" type="number" min="1900" formControlName="ano" class="form-control" />
+          </div>
+          <div class="col-md-6 align-self-end">
+            <button type="button" class="btn btn-info" (click)="applyFilter()">Filtrar</button>
+            <button type="button" class="btn btn-outline-secondary ms-2" (click)="clearFilter()">Limpar Filtro</button>
+          </div>
+        </div>
+      </form>
+
+      <table class="table table-striped table-bordered mt-3">
+        <thead>
+          <tr>
+            <th>Mês/Ano</th>
+            <th>Produto</th>
+            <th>COSIF</th>
+            <th class="text-end">Valor (R$)</th>
+            <th>Descrição</th>
+            <th class="text-center">Lançamento</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let movimento of filteredMovimentos$ | async">
+            <td>{{ movimento.mes }}/{{ movimento.ano }}</td>
+            <td>{{ movimento.codProduto }}</td>
+            <td>{{ movimento.codCosif }}</td>
+            <td class="text-end">{{ movimento.valor | number:'1.2-2' }}</td>
+            <td>{{ movimento.descricao }}</td>
+            <td class="text-center">{{ movimento.numLancamento }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
