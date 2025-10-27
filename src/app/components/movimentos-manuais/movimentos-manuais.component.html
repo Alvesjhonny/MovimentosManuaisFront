@@ -2,7 +2,6 @@
   <div class="header">
     <h1>Movimentos Manuais</h1>
     <div class="header-actions">
-      <button class="btn btn-primary" type="button" (click)="novo()">+ Novo</button>
     </div>
   </div>
 
@@ -53,14 +52,16 @@
 
         <div class="col-md-4">
           <label for="valor">Valor</label>
-          <input id="valor" type="number" formControlName="valor" class="form-control" />
-          <div class="text-danger" *ngIf="movimentoForm.get('valor')?.invalid && movimentoForm.get('valor')?.touched">
+          <!-- Campo com máscara simples: mantemos o valor numérico no FormControl e exibimos valorDisplay formatado -->
+          <input id="valor" type="text" class="form-control" [value]="valorDisplay" (input)="onValorInput($event)" (blur)="onValorBlur()" (focus)="onValorFocus()" />
+          <div class="text-danger" *ngIf="valorInvalid">
             Informe um valor positivo.
           </div>
         </div>
       </div>
 
       <div class="card-actions mt-4">
+          <button class="btn btn-primary" type="button" (click)="novo()">Novo</button>
         <button class="btn btn-success" type="submit" [disabled]="movimentoForm.disabled || movimentoForm.invalid">Salvar</button>
         <button class="btn btn-secondary" type="button" (click)="limparFormulario()" [disabled]="movimentoForm.disabled">Limpar</button>
       </div>

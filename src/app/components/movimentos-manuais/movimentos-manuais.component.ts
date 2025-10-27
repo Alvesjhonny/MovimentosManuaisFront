@@ -12,6 +12,13 @@ import { MovimentosManuaisService } from '../../services/movimentos-manuais.serv
 })
 export class MovimentosManuaisComponent implements OnInit {
   movimentoForm: FormGroup;
+  valorDisplay = '';
+  valorTouched = false;
+  get valorInvalid() {
+    if (!this.valorTouched) return false;
+    const v = this.parseCurrency(this.valorDisplay);
+    return !(v > 0);
+  }
   filtroForm: FormGroup;
 
   private movimentosSubject = new BehaviorSubject<MovimentoManual[]>([]);
@@ -103,12 +110,12 @@ export class MovimentosManuaisComponent implements OnInit {
   }
 
   novo(): void {
+    // Habilita e limpa o formulário sem preencher mês/ano (devem ficar vazios conforme solicitado)
     this.movimentoForm.enable();
-    this.movimentoForm.reset();
-    const currentMonth = new Date().getMonth() + 1;
-    const currentYear = new Date().getFullYear();
-    this.movimentoForm.patchValue({ mes: currentMonth, ano: currentYear });
-    this.movimentoForm.get('codCosif').disable();
+    this.movimentoForm.reset({ mes: null, ano: null, codProduto: '', codCosif: '', valor: null, descricao: '' });
+    this.valorDisplay = '';
+    this.valorTouched = false;
+    this.movimentoForm.get('codCosif')?.disable();
   }
 
   disableForm(): void {
@@ -128,7 +135,9 @@ export class MovimentosManuaisComponent implements OnInit {
       return;
     }
 
+    // garantir que o valor numérico venha coerente a partir do campo formatado
     const payload: MovimentoManual = this.movimentoForm.getRawValue();
+    payload.valor = this.parseCurrency(this.valorDisplay);
 
     this.movimentoService.createMovimento(payload).subscribe(created => {
       const current = this.movimentosSubject.getValue();
@@ -139,7 +148,44 @@ export class MovimentosManuaisComponent implements OnInit {
   }
 
   limparFormulario(): void {
-    this.movimentoForm.reset();
+    // limpar todos os campos do formulário e o display do valor
+    this.movimentoForm.reset({ mes: null, ano: null, codProduto: '', codCosif: '', valor: null, descricao: '' });
+    // garantir que o FormControl 'valor' seja nulo para não manter validação
+    const control = this.movimentoForm.get('valor');
+    if (control) { control.setValue(null); }
+    this.valorDisplay = '';
+    this.valorTouched = false;
     this.disableForm();
+  }
+
+  // --- mask helpers for Valor field ---
+  onValorInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const raw = input.value || '';
+    // remove non-digits
+    const digits = raw.replace(/\D+/g, '') || '0';
+    const intVal = parseInt(digits, 10);
+    const number = intVal / 100;
+    // update display
+    this.valorDisplay = number.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    // set numeric value into the form control so validators work
+    const control = this.movimentoForm.get('valor');
+    if (control) { control.setValue(number); }
+    this.valorTouched = true;
+  }
+
+  onValorBlur(): void {
+    this.valorTouched = true;
+  }
+
+  onValorFocus(): void {
+    // no-op for now
+  }
+
+  private parseCurrency(display = ''): number {
+    if (!display) return 0;
+    const cleaned = display.replace(/\./g, '').replace(/,/g, '.').replace(/[^0-9.\-]/g, '');
+    const n = parseFloat(cleaned);
+    return Number.isFinite(n) ? n : 0;
   }
 }
