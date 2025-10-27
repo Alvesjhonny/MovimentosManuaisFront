@@ -104,7 +104,7 @@
             <td>{{ movimento.mes }}/{{ movimento.ano }}</td>
             <td>{{ movimento.codProduto }}</td>
             <td>{{ movimento.codCosif }}</td>
-            <td class="text-end">{{ movimento.valor | number:'1.2-2' }}</td>
+            <td class="text-end">{{ formatValor(movimento.valor) }}</td>
             <td>{{ movimento.descricao }}</td>
             <td class="text-center">{{ movimento.numLancamento }}</td>
           </tr>

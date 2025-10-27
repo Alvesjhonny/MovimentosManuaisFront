@@ -188,4 +188,10 @@ export class MovimentosManuaisComponent implements OnInit {
     const n = parseFloat(cleaned);
     return Number.isFinite(n) ? n : 0;
   }
+
+  // Formata um número para o mesmo padrão visual usado no campo de entrada (pt-BR, 2 casas)
+  formatValor(value: number | null | undefined): string {
+    const v = value ?? 0;
+    return v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
 }
